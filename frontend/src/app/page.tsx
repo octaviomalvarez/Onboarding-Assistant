@@ -40,7 +40,7 @@ export default function Dashboard() {
   const pending = items.filter((i) => !i.completed).slice(0, 3);
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-8 max-w-5xl">
 
       {/* Bienvenida */}
       <div
@@ -62,21 +62,20 @@ export default function Dashboard() {
       {/* Progreso */}
       <section className="mb-6">
         <SectionLabel label="Tu progreso" />
-        <div className="card p-6 mb-4" style={{ borderLeft: "3px solid #A100FF" }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium text-gray-700">Progreso general</p>
-            <p className="text-sm font-semibold" style={{ color: "#A100FF" }}>{percent}%</p>
+        <div className="grid grid-cols-4 gap-4">
+          {/* Progreso general */}
+          <div className="card p-5 col-span-2 flex flex-col justify-between" style={{ borderLeft: "3px solid #A100FF" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#A100FF" }}>General</p>
+            <div>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{percent}<span className="text-gray-300 font-normal text-lg">%</span></p>
+              <div className="w-full rounded-full h-1.5 mt-2" style={{ background: "#EDD9FF" }}>
+                <div className="h-1.5 rounded-full transition-all duration-500" style={{ width: `${percent}%`, background: "#A100FF" }} />
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">{completed} de {total} tareas</p>
+            </div>
           </div>
-          <div className="w-full rounded-full h-2.5" style={{ background: "#EDD9FF" }}>
-            <div
-              className="h-2.5 rounded-full transition-all duration-500"
-              style={{ width: `${percent}%`, background: "#A100FF" }}
-            />
-          </div>
-          <p className="text-xs text-gray-400 mt-2">{completed} de {total} tareas completadas</p>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
+          {/* Semanas */}
           {[
             { label: "Semana 1", done: week1Done, total: week1.length, color: "#A100FF" },
             { label: "Semana 2", done: week2Done, total: week2.length, color: "#7C00CC" },
