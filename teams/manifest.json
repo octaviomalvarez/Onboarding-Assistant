@@ -1,0 +1,39 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "a3f8c2d1-7e45-4b09-9f12-6a8e3d5c1b20",
+  "packageName": "com.accenture.data.onboarding-assistant",
+  "developer": {
+    "name": "Accenture Data Tower",
+    "websiteUrl": "https://accenture.com",
+    "privacyUrl": "https://accenture.com/privacy",
+    "termsOfUseUrl": "https://accenture.com/terms"
+  },
+  "icons": {
+    "color": "icon-color.png",
+    "outline": "icon-outline.png"
+  },
+  "name": {
+    "short": "Onboarding",
+    "full": "Onboarding Assistant"
+  },
+  "description": {
+    "short": "Tu guía de incorporación en Accenture",
+    "full": "Asistente digital para nuevos empleados de la torre de Data de Accenture. Centraliza tareas, accesos, capacitaciones, documentación y contactos clave."
+  },
+  "accentColor": "#7C3AED",
+  "staticTabs": [
+    {
+      "entityId": "onboarding-app",
+      "name": "Onboarding Assistant",
+      "contentUrl": "APP_URL",
+      "websiteUrl": "APP_URL",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity"],
+  "validDomains": [
+    "APP_DOMAIN"
+  ]
+}
