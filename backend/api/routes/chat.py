@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import anthropic
 import os
 
 from rag.retriever import retrieve_context
@@ -23,29 +22,51 @@ class ChatMessage(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     has_context: bool = False
+    provider: str = ""
 
 
-@router.post("/chat", response_model=ChatResponse)
-def chat(body: ChatMessage):
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY no configurada")
-
-    # Buscar contexto relevante en los documentos internos
-    context = retrieve_context(body.message) if not collection_is_empty() else ""
+def _build_user_content(message: str) -> tuple[str, bool]:
+    context = retrieve_context(message) if not collection_is_empty() else ""
     has_context = bool(context)
 
     if has_context:
-        user_content = f"""Usá la siguiente información interna de Accenture para responder.
+        content = f"""Usá la siguiente información interna de Accenture para responder.
 Si la información no alcanza para responder con certeza, decilo claramente.
 
 INFORMACIÓN RELEVANTE:
 {context}
 
 PREGUNTA:
-{body.message}"""
+{message}"""
     else:
-        user_content = body.message
+        content = message
+
+    return content, has_context
+
+
+def _call_lmstudio(user_content: str) -> str:
+    from openai import OpenAI
+
+    base_url = os.getenv("LMSTUDIO_URL", "http://localhost:1234/v1")
+    client = OpenAI(base_url=base_url, api_key="lm-studio")
+
+    response = client.chat.completions.create(
+        model="local-model",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
+        ],
+        max_tokens=1024,
+    )
+    return response.choices[0].message.content
+
+
+def _call_claude(user_content: str) -> str:
+    import anthropic
+
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY no configurada")
 
     client = anthropic.Anthropic(api_key=api_key)
     message = client.messages.create(
@@ -54,5 +75,17 @@ PREGUNTA:
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": user_content}],
     )
+    return message.content[0].text
 
-    return ChatResponse(response=message.content[0].text, has_context=has_context)
+
+@router.post("/chat", response_model=ChatResponse)
+def chat(body: ChatMessage):
+    provider = os.getenv("LLM_PROVIDER", "lmstudio").lower()
+    user_content, has_context = _build_user_content(body.message)
+
+    if provider == "anthropic":
+        response_text = _call_claude(user_content)
+    else:
+        response_text = _call_lmstudio(user_content)
+
+    return ChatResponse(response=response_text, has_context=has_context, provider=provider)
