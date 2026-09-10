@@ -33,6 +33,25 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    href: "/chat",
+    label: "Asistente",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M14 9.333A1.333 1.333 0 0 1 12.667 10.667H4.667L2.667 13V3.333A1.333 1.333 0 0 1 4 2h8.667A1.333 1.333 0 0 1 14 3.333v6z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    href: "/admin",
+    label: "Admin docs",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+        <path d="M9 2v4h4M5.5 8.5h5M5.5 11h3" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {

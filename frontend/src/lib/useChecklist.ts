@@ -1,37 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { CHECKLIST_ITEMS } from "./mock-data";
+import { useState, useEffect, useCallback } from "react";
+import { fetchChecklist, updateChecklistItem } from "./api";
+import { useRole } from "@/contexts/RoleContext";
 import type { ChecklistItem } from "./types";
 
-const STORAGE_KEY = "onboarding_checklist";
-
 export function useChecklist() {
-  const [items, setItems] = useState<ChecklistItem[]>(CHECKLIST_ITEMS);
+  const { role } = useRole();
+  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const completedIds: string[] = JSON.parse(stored);
-      setItems(
-        CHECKLIST_ITEMS.map((item) => ({
-          ...item,
-          completed: completedIds.includes(item.id),
-        }))
-      );
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setItems(await fetchChecklist(role ?? undefined));
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [role]);
 
-  function toggle(id: string) {
-    setItems((prev) => {
-      const updated = prev.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
-      );
-      const completedIds = updated.filter((i) => i.completed).map((i) => i.id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(completedIds));
-      return updated;
-    });
+  useEffect(() => { load(); }, [load]);
+
+  async function toggle(id: string) {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    const newVal = !item.completed;
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, completed: newVal } : i)));
+    try {
+      await updateChecklistItem(id, newVal);
+    } catch {
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, completed: item.completed } : i)));
+    }
   }
 
-  return { items, toggle };
+  return { items, toggle, loading };
 }

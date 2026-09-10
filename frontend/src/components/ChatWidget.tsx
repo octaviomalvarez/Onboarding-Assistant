@@ -1,66 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { sendMessage } from "@/lib/api";
-
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
+import { useState } from "react";
+import { useChatMessages } from "@/hooks/useChatMessages";
+import MarkdownMessage from "./MarkdownMessage";
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    function handleOpen() { setOpen(true); }
-    window.addEventListener("open-chat-widget", handleOpen);
-    return () => window.removeEventListener("open-chat-widget", handleOpen);
-  }, []);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hola! Soy tu asistente de onboarding. ¿En qué te puedo ayudar hoy?" },
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, open]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
-
-    const userMessage = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
-    setLoading(true);
-
-    try {
-      const response = await sendMessage(userMessage);
-      setMessages((prev) => [...prev, { role: "assistant", content: response }]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Hubo un error al procesar tu consulta. Intentá de nuevo." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function formatMessage(text: string): string {
-    return text
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\n/g, "<br/>");
-  }
+  const { messages, input, setInput, loading, handleSubmit, bottomRef } = useChatMessages();
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
 
-      {/* Panel de chat */}
       {open && (
         <div
           className="card flex flex-col transition-all duration-200"
@@ -70,9 +21,9 @@ export default function ChatWidget() {
             height: expanded ? "540px" : "460px",
           }}
         >
-          {/* Header del panel */}
+          {/* Header */}
           <div
-            className="flex items-center justify-between px-4 py-3 rounded-t-2xl"
+            className="flex items-center justify-between px-4 py-3 rounded-t-2xl flex-shrink-0"
             style={{ background: "#A100FF" }}
           >
             <div className="flex items-center gap-2">
@@ -105,21 +56,13 @@ export default function ChatWidget() {
           </div>
 
           {/* Mensajes */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className="max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap"
-                  style={
-                    msg.role === "user"
-                      ? { background: "#A100FF", color: "white", borderBottomRightRadius: "4px" }
-                      : { background: "#F5E6FF", color: "#3b0764", borderBottomLeftRadius: "4px" }
-                  }
-                  dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-                />
+                <MarkdownMessage content={msg.content} role={msg.role} sources={msg.sources} />
               </div>
             ))}
-            {loading && (
+            {loading && messages[messages.length - 1]?.content === "" && (
               <div className="flex justify-start">
                 <div
                   className="rounded-2xl px-3 py-2 text-sm"
@@ -135,7 +78,7 @@ export default function ChatWidget() {
           {/* Input */}
           <form
             onSubmit={handleSubmit}
-            className="p-3 flex gap-2"
+            className="p-3 flex gap-2 flex-shrink-0"
             style={{ borderTop: "1px solid #f0e6ff" }}
           >
             <input
@@ -164,7 +107,7 @@ export default function ChatWidget() {
       {/* Botón flotante */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-13 h-13 rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
+        className="rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
         style={{
           background: "#A100FF",
           boxShadow: "0 4px 20px rgba(161,0,255,0.35)",
