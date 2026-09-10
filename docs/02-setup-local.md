@@ -11,8 +11,8 @@ Esta guía permite levantar el proyecto en una máquina nueva desde cero.
 ## 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repo>
-cd onboarding-assistant
+git clone https://github.com/octaviomalvarez/Onboarding-Assistant.git
+cd Onboarding-Assistant
 ```
 
 ## 2. Configurar el backend
@@ -29,8 +29,8 @@ python -m venv .venv
 # Activar el entorno (Mac/Linux)
 source .venv/bin/activate
 
-# Instalar dependencias core
-pip install fastapi "uvicorn[standard]" python-dotenv pydantic httpx chromadb sentence-transformers
+# Instalar dependencias
+pip install fastapi "uvicorn[standard]" python-dotenv pydantic httpx chromadb sentence-transformers sqlmodel aiofiles
 ```
 
 > Si querés usar Claude como LLM también instalá: `pip install anthropic`
@@ -42,23 +42,25 @@ pip install fastapi "uvicorn[standard]" python-dotenv pydantic httpx chromadb se
 python -m rag.ingest
 ```
 
-Esto carga los documentos de `data/docs/` en ChromaDB. La primera vez descarga el modelo de embeddings (~100 MB). Corré este comando cada vez que modifiques o agregues archivos en `data/docs/`.
+Esto carga los documentos de `data/docs/` en ChromaDB. La primera vez descarga el modelo de embeddings (~100 MB). Corré este comando cada vez que modifiques o agregues archivos en `data/docs/` (o usá el panel `/admin` desde la UI).
 
 ## 4. Levantar el backend
 
+En Windows PowerShell (desde la carpeta raíz del proyecto):
+
+```powershell
+$env:PYTHONPATH = "c:\ruta\al\proyecto\backend"
+& ".\backend\.venv\Scripts\python.exe" -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+En Mac/Linux (desde la carpeta `backend`):
+
 ```bash
 # Proveedor mock (sin API key, para demo)
-LLM_PROVIDER=mock uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 
 # Proveedor Claude (requiere ANTHROPIC_API_KEY)
 ANTHROPIC_API_KEY=sk-... LLM_PROVIDER=anthropic uvicorn main:app --reload --port 8000
-```
-
-En Windows PowerShell:
-```powershell
-$env:PYTHONPATH = "."
-$env:LLM_PROVIDER = "mock"
-python -m uvicorn main:app --reload --port 8000
 ```
 
 Verificar que funciona:
@@ -69,9 +71,7 @@ Verificar que funciona:
 ## 5. Configurar el frontend
 
 ```bash
-cd ../frontend
-
-# Instalar dependencias
+cd frontend
 npm install
 ```
 
@@ -89,7 +89,7 @@ Con los dos servicios corriendo:
 1. Abrí `http://localhost:3000`
 2. Usá el widget flotante o la sección Asistente
 3. Preguntá algo como: *"¿Qué debo hacer durante mi primera semana?"*
-4. El frontend llama al backend → el backend busca en ChromaDB → devuelve la respuesta con contexto de los docs
+4. El frontend llama al backend via SSE → el backend busca en ChromaDB → la respuesta aparece en streaming con Markdown
 
 ## Proveedores de LLM disponibles
 
@@ -101,7 +101,13 @@ Con los dos servicios corriendo:
 
 ## Agregar documentos al asistente
 
-1. Crear un archivo `.md` en `backend/data/docs/`
+**Opción A — desde la UI (recomendado):**
+1. Ir a `http://localhost:3000/admin`
+2. Subir el archivo `.md`
+3. Hacer clic en "Re-indexar ahora"
+
+**Opción B — manual:**
+1. Copiar el archivo `.md` en `backend/data/docs/`
 2. Correr `python -m rag.ingest` desde la carpeta `backend`
 
 ## Estructura de puertos
@@ -114,13 +120,19 @@ Con los dos servicios corriendo:
 ## Solución de problemas comunes
 
 **El frontend arranca en puerto 3001 en lugar de 3000**
-→ Hay otro proceso usando el puerto 3000. En PowerShell: `Get-NetTCPConnection -LocalPort 3000 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
+→ Hay otro proceso usando el puerto 3000. En PowerShell:
+```powershell
+Get-NetTCPConnection -LocalPort 3000 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+```
 
 **Error de CORS**
 → El frontend debe correr en el mismo puerto que `ALLOWED_ORIGINS` en el backend (por defecto `http://localhost:3000`).
 
+**El asistente se queda en "Escribiendo..." sin responder**
+→ El event loop del backend está bloqueado. Verificar que el backend esté corriendo con la última versión del código (el RAG corre en `asyncio.to_thread` para no bloquear).
+
 **El asistente siempre responde con keyword matching (ignora los docs)**
-→ Los documentos no están indexados. Correr `python -m rag.ingest` desde la carpeta `backend`.
+→ Los documentos no están indexados. Ir a `/admin` y hacer clic en "Re-indexar ahora", o correr `python -m rag.ingest` desde la carpeta `backend`.
 
 **El frontend no conecta con el backend**
-→ Verificar que el backend está corriendo en el puerto 8000 y que `NEXT_PUBLIC_API_URL=http://localhost:8000` en `frontend/.env.local`.
+→ Verificar que el backend está corriendo en el puerto 8000 y que `NEXT_PUBLIC_API_URL=http://localhost:8000` en `frontend/.env.local` (si existe).

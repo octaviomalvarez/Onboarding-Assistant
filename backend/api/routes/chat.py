@@ -282,7 +282,7 @@ async def _stream_lmstudio(message: str, context: str, history: list[HistoryEntr
 @router.post("/chat/stream")
 async def chat_stream(body: ChatMessage):
     provider = os.getenv("LLM_PROVIDER", "mock").lower()
-    context, sources, has_context = _get_context(body.message)
+    context, sources, has_context = await asyncio.to_thread(_get_context, body.message)
 
     async def event_generator():
         try:

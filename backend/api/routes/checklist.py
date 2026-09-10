@@ -19,7 +19,6 @@ class ChecklistItemResponse(BaseModel):
     week: Literal[1, 2]
     completed: bool
     dueDay: int
-    roles: str = ""
 
     model_config = {"populate_by_name": True}
 
@@ -29,16 +28,13 @@ class ChecklistUpdate(BaseModel):
 
 
 @router.get("/checklist", response_model=list[ChecklistItemResponse])
-def get_checklist(role: str | None = None, session: Session = Depends(get_session)):
+def get_checklist(session: Session = Depends(get_session)):
     items = session.exec(select(ChecklistItemDB)).all()
     if not items:
         for seed in SEED_ITEMS:
             session.add(ChecklistItemDB(**seed))
         session.commit()
         items = session.exec(select(ChecklistItemDB)).all()
-
-    if role:
-        items = [i for i in items if not i.roles or role in i.roles.split(",")]
 
     return [
         ChecklistItemResponse(
@@ -49,7 +45,6 @@ def get_checklist(role: str | None = None, session: Session = Depends(get_sessio
             week=i.week,
             completed=i.completed,
             dueDay=i.due_day,
-            roles=i.roles,
         )
         for i in items
     ]
@@ -72,5 +67,4 @@ def update_checklist_item(item_id: str, body: ChecklistUpdate, session: Session 
         week=item.week,
         completed=item.completed,
         dueDay=item.due_day,
-        roles=item.roles,
     )
