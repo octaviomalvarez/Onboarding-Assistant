@@ -135,7 +135,29 @@ PREGUNTA:
     return content, has_context
 
 
-def _call_mock(message: str) -> str:
+def _call_mock(message: str, context: str = "") -> str:
+    if context:
+        sections = context.split("\n\n---\n\n")
+        parts = []
+        for section in sections:
+            lines = section.strip().splitlines()
+            content_lines = [
+                l for l in lines
+                if not l.startswith("[Fuente:") and not l.startswith("[Título:")
+            ]
+            # La primera línea del chunk es el título de la sección
+            chunk_lines = "\n".join(content_lines).strip().splitlines()
+            if not chunk_lines:
+                continue
+            title = chunk_lines[0]
+            body = "\n".join(chunk_lines[1:]).strip()
+            if body:
+                parts.append(f"**{title}**\n{body}")
+            else:
+                parts.append(title)
+        if parts:
+            return "Encontré esto en la documentación interna:\n\n" + "\n\n".join(parts)
+
     lower = message.lower()
     for keywords, response in MOCK_RESPONSES:
         if any(kw in lower for kw in keywords):
@@ -187,6 +209,7 @@ def chat(body: ChatMessage):
     elif provider == "lmstudio":
         response_text = _call_lmstudio(user_content)
     else:
-        response_text = _call_mock(body.message)
+        context = retrieve_context(body.message) if not collection_is_empty() else ""
+        response_text = _call_mock(body.message, context=context)
 
     return ChatResponse(response=response_text, has_context=has_context, provider=provider)

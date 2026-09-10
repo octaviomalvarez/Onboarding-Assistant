@@ -1,63 +1,39 @@
-# Capacitaciones obligatorias — Torre de Data
+# Capacitaciones obligatorias — Accenture
 
-## Cursos obligatorios para todos los empleados
+## Cursos que hay que completar en los primeros 30 días
 
-Estos cursos deben completarse dentro de los primeros 30 días:
+Todos los cursos están disponibles en el portal de capacitaciones de Accenture. Ante dudas sobre el portal o los cursos, contactá a **Laura Méndez** (laura.mendez@accenture.com).
 
-**Code of Business Ethics (COBE)**
-- Plataforma: portal de capacitaciones interno
-- Duración: 45 minutos
-- Vencimiento: anual (se renueva cada año)
-- Completarlo antes del Día 3 del onboarding
+### Code of Business Ethics (COBE)
+- **Duración:** 45 minutos
+- **Plazo:** completarlo antes del Día 3 del onboarding
+- **Contenido:** principios éticos, conflictos de interés, manejo de información confidencial
 
-**Data Privacy & Security**
-- Plataforma: portal de capacitaciones interno
-- Duración: 60 minutos
-- Vencimiento: anual
-- Completarlo durante la segunda semana
+### Data Privacy & Security
+- **Duración:** 60 minutos
+- **Plazo:** segunda semana
+- **Contenido:** GDPR, manejo de datos personales, clasificación de información
 
-**Information Security Fundamentals**
-- Plataforma: portal de capacitaciones interno
-- Duración: 30 minutos
-- Vencimiento: anual
+### Information Security Fundamentals
+- **Duración:** 30 minutos
+- **Plazo:** primeras dos semanas
+- **Contenido:** contraseñas seguras, phishing, manejo de dispositivos
 
-**Workplace Harassment Prevention**
-- Plataforma: portal de capacitaciones interno
-- Duración: 45 minutos
-- Vencimiento: anual
+### Workplace Harassment Prevention
+- **Duración:** 45 minutos
+- **Plazo:** primer mes
+- **Contenido:** política de respeto, canales de denuncia
 
-## Capacitaciones recomendadas para la Torre de Data
+## Capacitaciones técnicas recomendadas
 
-Estas no son obligatorias pero son muy recomendadas para los primeros 90 días:
+Además de los cursos obligatorios, se recomienda completar estas certificaciones técnicas durante el primer trimestre:
 
-**Azure Fundamentals (AZ-900)**
-- Plataforma: Microsoft Learn (gratuito)
-- Duración: 10 a 15 horas
-- Útil para: todos los roles en proyectos con stack Azure
+- **Microsoft Azure Fundamentals (AZ-900)** — base para trabajar con el stack de Azure
+- **Databricks Lakehouse Fundamentals** — gratuita en la plataforma de Databricks Academy
+- **dbt Fundamentals** — gratuita en dbt Learn
 
-**Databricks Fundamentals**
-- Plataforma: Databricks Academy (gratuito con cuenta de Accenture)
-- Duración: 6 a 8 horas
-- Útil para: roles de Data Engineering y Analytics
+El Tech Lead de tu proyecto puede indicarte cuáles son más prioritarias según el proyecto al que te asignaron.
 
-**dbt Fundamentals**
-- Plataforma: dbt Learn (gratuito)
-- Duración: 4 horas
-- Útil para: roles de Analytics Engineering
+## Cómo acceder al portal de capacitaciones
 
-**Power BI Desktop**
-- Plataforma: Microsoft Learn (gratuito)
-- Duración: 8 a 10 horas
-- Útil para: roles de Analytics y BI
-
-## ¿Cómo accedo al portal de capacitaciones?
-
-El portal de capacitaciones es accesible desde la intranet con tu cuenta corporativa. Si es tu primera vez, buscá "Learning" en el portal interno o preguntale a tu People Lead el enlace directo.
-
-## ¿Qué pasa si no completo las capacitaciones obligatorias a tiempo?
-
-Tu People Lead va a recibir una notificación si no completás las capacitaciones obligatorias en el plazo establecido. Completarlas a tiempo es importante para tu evaluación de onboarding. Si tenés algún inconveniente para acceder, contactá a laura.mendez@accenture.com.
-
-## Contacto para capacitaciones
-
-- **Responsable de Capacitaciones**: laura.mendez@accenture.com
+Ingresá con tu cuenta corporativa al portal de capacitaciones. Los cursos obligatorios aparecen marcados como "Requeridos" y tienen fecha límite visible. El sistema envía recordatorios automáticos por email cuando se acerca la fecha límite.

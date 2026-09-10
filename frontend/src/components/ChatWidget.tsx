@@ -10,6 +10,7 @@ type Message = {
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     function handleOpen() { setOpen(true); }
@@ -49,14 +50,25 @@ export default function ChatWidget() {
     }
   }
 
+  function formatMessage(text: string): string {
+    return text
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br/>");
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
 
       {/* Panel de chat */}
       {open && (
         <div
-          className="card flex flex-col w-80 h-[460px]"
-          style={{ boxShadow: "0 8px 32px rgba(161,0,255,0.18)" }}
+          className="card flex flex-col transition-all duration-200"
+          style={{
+            boxShadow: "0 8px 32px rgba(161,0,255,0.18)",
+            width: expanded ? "520px" : "320px",
+            height: expanded ? "540px" : "460px",
+          }}
         >
           {/* Header del panel */}
           <div
@@ -67,12 +79,29 @@ export default function ChatWidget() {
               <div className="w-2 h-2 rounded-full bg-white opacity-80" />
               <p className="text-sm font-medium text-white">Asistente de Onboarding</p>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-white opacity-70 hover:opacity-100 transition-opacity text-lg leading-none"
-            >
-              ×
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setExpanded((v) => !v)}
+                className="text-white opacity-70 hover:opacity-100 transition-opacity"
+                aria-label={expanded ? "Reducir" : "Expandir"}
+              >
+                {expanded ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M9 1h4v4M5 13H1V9M13 9v4H9M1 5V1h4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-white opacity-70 hover:opacity-100 transition-opacity text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
           </div>
 
           {/* Mensajes */}
@@ -80,15 +109,14 @@ export default function ChatWidget() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className="max-w-[85%] rounded-2xl px-3 py-2 text-sm"
+                  className="max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap"
                   style={
                     msg.role === "user"
                       ? { background: "#A100FF", color: "white", borderBottomRightRadius: "4px" }
                       : { background: "#F5E6FF", color: "#3b0764", borderBottomLeftRadius: "4px" }
                   }
-                >
-                  {msg.content}
-                </div>
+                  dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
+                />
               </div>
             ))}
             {loading && (
