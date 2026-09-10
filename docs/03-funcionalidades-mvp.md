@@ -4,12 +4,14 @@
 
 | Funcionalidad | Estado | Notas |
 |---|---|---|
-| Asistente conversacional (chat) | Implementado | Requiere API key de Anthropic para funcionar |
+| Asistente conversacional (chat) | Implementado | Soporta mock (sin API key), Anthropic y LM Studio |
+| RAG sobre documentación interna | Implementado | ChromaDB + sentence-transformers, umbral de relevancia |
+| Documentos de onboarding indexados | Implementado | 7 archivos .md, 31 chunks en `backend/data/docs/` |
+| Widget de chat expandible | Implementado | Tamaño normal y expandido desde el header |
 | Checklist de onboarding | Implementado | Datos de ejemplo, estado local (sin persistencia aún) |
 | Dashboard con progreso | Implementado | Calcula progreso en base al checklist |
 | Directorio de contactos | Implementado | Datos de ejemplo |
 | Navegación lateral | Implementado | |
-| RAG sobre documentación interna | Pendiente | Siguiente etapa |
 | Persistencia de progreso en BD | Pendiente | Siguiente etapa |
 | Autenticación Azure AD | Pendiente | Para el piloto |
 | Teams Tab | Pendiente | Para el piloto |
@@ -29,7 +31,7 @@ Lista de tareas de las primeras dos semanas, organizadas por semana y categoría
 - **Equipo:** reuniones y presentaciones con el equipo
 
 ### `/chat` — Asistente
-Interfaz de chat que se conecta al backend. El backend llama a la API de Claude con un system prompt que define el rol del asistente como guía de onboarding de la torre de Data.
+Interfaz de chat que se conecta al backend. El backend usa RAG para buscar contexto relevante en los documentos de onboarding antes de responder. Soporta tres proveedores de LLM: mock (sin API key), Anthropic Claude y LM Studio. También disponible como widget flotante en todas las páginas.
 
 ### `/contactos` — Contactos clave
 Directorio con los contactos principales para el onboarding: People Lead, Tech Lead, soporte IT, capacitaciones y accesos.

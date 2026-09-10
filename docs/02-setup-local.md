@@ -6,7 +6,7 @@ Esta guía permite levantar el proyecto en una máquina nueva desde cero.
 
 - Python 3.11 o superior
 - Node.js 18 o superior
-- Una API key de Anthropic (`ANTHROPIC_API_KEY`)
+- API key de Anthropic (`ANTHROPIC_API_KEY`) — **opcional**, el proveedor mock no la requiere
 
 ## 1. Clonar el repositorio
 
@@ -29,40 +29,53 @@ python -m venv .venv
 # Activar el entorno (Mac/Linux)
 source .venv/bin/activate
 
-# Instalar dependencias
-pip install -e .
-
-# Configurar variables de entorno
-copy .env.example .env
-# Editá .env y completá ANTHROPIC_API_KEY con tu clave
+# Instalar dependencias core
+pip install fastapi "uvicorn[standard]" python-dotenv pydantic httpx chromadb sentence-transformers
 ```
 
-## 3. Levantar el backend
+> Si querés usar Claude como LLM también instalá: `pip install anthropic`
+
+## 3. Indexar los documentos de onboarding (RAG)
 
 ```bash
 # Desde la carpeta backend, con el entorno activado
-uvicorn main:app --reload --port 8000
+python -m rag.ingest
+```
+
+Esto carga los documentos de `data/docs/` en ChromaDB. La primera vez descarga el modelo de embeddings (~100 MB). Corré este comando cada vez que modifiques o agregues archivos en `data/docs/`.
+
+## 4. Levantar el backend
+
+```bash
+# Proveedor mock (sin API key, para demo)
+LLM_PROVIDER=mock uvicorn main:app --reload --port 8000
+
+# Proveedor Claude (requiere ANTHROPIC_API_KEY)
+ANTHROPIC_API_KEY=sk-... LLM_PROVIDER=anthropic uvicorn main:app --reload --port 8000
+```
+
+En Windows PowerShell:
+```powershell
+$env:PYTHONPATH = "."
+$env:LLM_PROVIDER = "mock"
+python -m uvicorn main:app --reload --port 8000
 ```
 
 Verificar que funciona:
-- `http://localhost:8000/` → debe devolver `{"message": "Onboarding Assistant API", "version": "0.1.0"}`
-- `http://localhost:8000/api/v1/health` → debe devolver `{"status": "ok"}`
-- `http://localhost:8000/docs` → Swagger UI con todos los endpoints
+- `http://localhost:8000/` → `{"message": "Onboarding Assistant API", "version": "0.1.0"}`
+- `http://localhost:8000/api/v1/health` → `{"status": "ok"}`
+- `http://localhost:8000/docs` → Swagger UI
 
-## 4. Configurar el frontend
+## 5. Configurar el frontend
 
 ```bash
 cd ../frontend
 
 # Instalar dependencias
 npm install
-
-# Configurar variables de entorno
-copy .env.local.example .env.local
-# El archivo ya tiene los valores correctos para desarrollo local
 ```
 
-## 5. Levantar el frontend
+## 6. Levantar el frontend
 
 ```bash
 npm run dev
@@ -70,13 +83,26 @@ npm run dev
 
 Abrir `http://localhost:3000` en el browser.
 
-## 6. Probar el flujo completo
+## 7. Probar el flujo completo
 
 Con los dos servicios corriendo:
 1. Abrí `http://localhost:3000`
-2. Escribí una pregunta en el chat, por ejemplo: *"¿Qué debo hacer durante mi primera semana?"*
-3. El frontend llama al backend en `localhost:8000/api/v1/chat`
-4. El backend llama a Claude API y devuelve la respuesta
+2. Usá el widget flotante o la sección Asistente
+3. Preguntá algo como: *"¿Qué debo hacer durante mi primera semana?"*
+4. El frontend llama al backend → el backend busca en ChromaDB → devuelve la respuesta con contexto de los docs
+
+## Proveedores de LLM disponibles
+
+| Variable `LLM_PROVIDER` | Descripción | Requiere |
+|---|---|---|
+| `mock` (default) | Respuestas basadas en RAG + keyword matching | Nada |
+| `anthropic` | Claude via Anthropic API | `ANTHROPIC_API_KEY` |
+| `lmstudio` | Modelo local via LM Studio | LM Studio corriendo en puerto 1234 |
+
+## Agregar documentos al asistente
+
+1. Crear un archivo `.md` en `backend/data/docs/`
+2. Correr `python -m rag.ingest` desde la carpeta `backend`
 
 ## Estructura de puertos
 
@@ -87,11 +113,14 @@ Con los dos servicios corriendo:
 
 ## Solución de problemas comunes
 
-**Error: ANTHROPIC_API_KEY no configurada**
-→ Verificar que el archivo `backend/.env` existe y tiene la clave completa.
+**El frontend arranca en puerto 3001 en lugar de 3000**
+→ Hay otro proceso usando el puerto 3000. En PowerShell: `Get-NetTCPConnection -LocalPort 3000 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
 
 **Error de CORS**
-→ Verificar que `ALLOWED_ORIGINS=http://localhost:3000` está en `backend/.env`.
+→ El frontend debe correr en el mismo puerto que `ALLOWED_ORIGINS` en el backend (por defecto `http://localhost:3000`).
+
+**El asistente siempre responde con keyword matching (ignora los docs)**
+→ Los documentos no están indexados. Correr `python -m rag.ingest` desde la carpeta `backend`.
 
 **El frontend no conecta con el backend**
-→ Verificar que el backend está corriendo en el puerto 8000 y que `frontend/.env.local` tiene `NEXT_PUBLIC_API_URL=http://localhost:8000`.
+→ Verificar que el backend está corriendo en el puerto 8000 y que `NEXT_PUBLIC_API_URL=http://localhost:8000` en `frontend/.env.local`.
