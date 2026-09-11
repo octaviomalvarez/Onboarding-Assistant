@@ -4,6 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
+# Forzar modo offline para HuggingFace — el modelo ya está cacheado localmente
+# Evita que sentence-transformers intente conectarse a HuggingFace en cada startup
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 from api.routes import chat, health, checklist, contacts
 from api.routes import admin
 from database import create_db_and_tables

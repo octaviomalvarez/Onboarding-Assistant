@@ -8,6 +8,7 @@ venv/
 dist/
 .pytest_cache/
 chroma_db/
+*.db
 
 # Node
 node_modules/
